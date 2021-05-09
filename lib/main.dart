@@ -11,6 +11,7 @@ import 'package:clone_uber_app/src/pages/driver/map/driver_map_page.dart';
 import 'package:clone_uber_app/src/utils/colors.dart' as utils;
 
 void main() async {
+  //comment
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(MyApp());
