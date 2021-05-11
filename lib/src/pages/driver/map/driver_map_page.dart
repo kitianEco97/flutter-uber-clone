@@ -20,13 +20,23 @@ class _DriverMapPageState extends State<DriverMapPage> {
     // TODO: implement initState
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      _controller.init(context);
+      _controller.init(context, refresh);
     });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    print('Se ejecuto el dispose');
+    _controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _controller.key,
+      drawer: _drawer(),
       body: Stack(
         children: [
           _googleMapsWidget(),
@@ -51,20 +61,84 @@ class _DriverMapPageState extends State<DriverMapPage> {
     );
   }
 
+  Widget _drawer(){
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          
+          DrawerHeader(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    child: Text(
+                        _controller.driver?.username ?? 'Nombre de usuario',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold
+                      ),
+                      maxLines: 1,
+                    ),
+                  ),
+                  Container(
+                    child: Text(
+                      _controller.driver?.email ?? 'Correo electronico',
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey[800],
+                          fontWeight: FontWeight.bold
+                      ),
+                      maxLines: 1,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  CircleAvatar(
+                    backgroundImage: AssetImage('assets/img/profile.jpg'),
+                    radius: 40,
+                  )
+                ]
+              ),
+            decoration: BoxDecoration(
+              color: Colors.amber
+            ),
+          ),
+          ListTile(
+            title: Text('Editar perfil'),
+            trailing: Icon(Icons.edit),
+            //leading: Icon(Icons.cancel),
+            onTap: (){},
+          ),
+          ListTile(
+            title: Text('Cerrar sesión'),
+            trailing: Icon(Icons.power_settings_new),
+            //leading: Icon(Icons.cancel),
+            onTap: _controller.signOut,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buttonCenterPosition(){
-    return Container(
-      alignment: Alignment.centerRight,
-      margin: EdgeInsets.symmetric(horizontal: 5),
-      child: Card(
-        shape: CircleBorder(),
-        color: Colors.white,
-        elevation: 4.0,
-        child: Container(
-          padding: EdgeInsets.all(10),
-          child: Icon(
-              Icons.location_searching,
-              color: Colors.grey[600],
-              size: 20
+    return GestureDetector(
+      onTap: _controller.centerPosition,
+      child: Container(
+        alignment: Alignment.centerRight,
+        margin: EdgeInsets.symmetric(horizontal: 5),
+        child: Card(
+          shape: CircleBorder(),
+          color: Colors.white,
+          elevation: 4.0,
+          child: Container(
+            padding: EdgeInsets.all(10),
+            child: Icon(
+                Icons.location_searching,
+                color: Colors.grey[600],
+                size: 20
+            ),
           ),
         ),
       ),
@@ -73,12 +147,13 @@ class _DriverMapPageState extends State<DriverMapPage> {
 
   Widget _buttonDrawer(){
     return Container(
-      alignment: Alignment.centerLeft,
-      child: IconButton(
-        onPressed: (){},
-        icon: Icon(Icons.menu, color: Colors.white ),
-      ),
-    );
+        alignment: Alignment.centerLeft,
+        child: IconButton(
+          onPressed: _controller.openDrawer,
+          icon: Icon(Icons.menu, color: Colors.white ),
+        ),
+      );
+
   }
 
   Widget _buttonConnect() {
@@ -87,8 +162,9 @@ class _DriverMapPageState extends State<DriverMapPage> {
       alignment: Alignment.center,
       margin: EdgeInsets.symmetric(horizontal: 80, vertical: 40),
       child: ButtonApp(
-        text: 'CONECTSRSE',
-        color: Colors.amber,
+        onPressed: _controller.connect,
+        text: _controller.isConnect ? 'DESCONECTARSE' : 'CONECTARSE',
+        color: _controller.isConnect ? Colors.grey[300] : Colors.amber,
         textColor: Colors.black,
       ),
     );
@@ -96,10 +172,18 @@ class _DriverMapPageState extends State<DriverMapPage> {
 
   Widget _googleMapsWidget() {
     return GoogleMap(
-      mapType: MapType.normal,
+        mapType: MapType.normal,
         initialCameraPosition: _controller.initialPosition,
         onMapCreated: _controller.onMapCreated,
-        myLocationButtonEnabled: false ,
+        myLocationEnabled: true,
+        myLocationButtonEnabled: true,
+        markers: Set<Marker>.of(_controller.markers.values),
     );
+  }
+
+  void refresh() {
+    setState(() {
+
+    });
   }
 }

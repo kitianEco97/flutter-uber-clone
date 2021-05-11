@@ -16,7 +16,7 @@ class HomeController {
     _authProvider = new AuthProvider();
 
     _typeUser = await _sharedPref.read('typeUser');
-    //checkIfUserIsAuth();
+    checkIfUserIsAuth();
   }
 
   void checkIfUserIsAuth() {

@@ -11,14 +11,15 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:clone_uber_app/src/providers/auth_provider.dart';
 import 'package:clone_uber_app/src/providers/geofire_provider.dart';
 import 'package:clone_uber_app/src/providers/driver_provider.dart';
+import 'package:clone_uber_app/src/providers/client_provider.dart';
 
 import 'package:clone_uber_app/src/utils/snackbar.dart' as utils;
 import 'package:clone_uber_app/src/utils/my_progress_dialog.dart';
 
 import 'package:clone_uber_app/src/models/driver.dart';
+import 'package:clone_uber_app/src/models/client.dart';
 
-
-class DriverMapController {
+class ClientMapController {
 
   BuildContext context;
   Function refresh;
@@ -37,6 +38,7 @@ class DriverMapController {
 
   BitmapDescriptor markerDriver;
 
+  ClientProvider _clientProvider;
   GeofireProvider _geofireProvider;
   AuthProvider _authProvider;
   DriverProvider _driverProvider;
@@ -44,10 +46,10 @@ class DriverMapController {
   bool isConnect = false;
   ProgressDialog _progressDialog;
 
-  StreamSubscription<DocumentSnapshot> _statusSuscription;
-  StreamSubscription<DocumentSnapshot> _driverInfoSuscription;
+  StreamSubscription<DocumentSnapshot> _statusSubscription;
+  StreamSubscription<DocumentSnapshot> _clientInfoSubscription;
 
-  Driver driver;
+  Client client;
 
   Future init(BuildContext context, Function refresh) async {
     this.context = context;
@@ -55,16 +57,17 @@ class DriverMapController {
     _geofireProvider = new GeofireProvider();
     _authProvider = new AuthProvider();
     _driverProvider = new DriverProvider();
+    _clientProvider = new ClientProvider();
     _progressDialog = MyProgressDialog.createProgressDialog(context, 'Conectandose...');
     markerDriver = await createMarkerImageFromAsset('assets/img/taxi_icon.png');
     checkGPS();
-    getDriverInfo();
+    getClientInfo();
   }
 
-  void getDriverInfo() {
-    Stream<DocumentSnapshot> driverStream = _driverProvider.getByIdStream(_authProvider.getUser().uid);
-    _driverInfoSuscription = driverStream.listen((DocumentSnapshot document) {
-      driver = Driver.fromJson(document.data());
+  void getClientInfo() {
+    Stream<DocumentSnapshot> clientStream = _clientProvider.getByIdStream(_authProvider.getUser().uid);
+    _clientInfoSubscription = clientStream.listen((DocumentSnapshot document) {
+      client = Client.fromJson(document.data());
       refresh();
     });
   }
@@ -75,8 +78,8 @@ class DriverMapController {
 
   void dispose() {
     _positionStream?.cancel();
-    _statusSuscription?.cancel();
-    _driverInfoSuscription?.cancel();
+    _statusSubscription?.cancel();
+    _clientInfoSubscription?.cancel();
   }
 
   void signOut() async {
@@ -89,49 +92,11 @@ class DriverMapController {
     _mapController.complete(controller);
   }
 
-  void _saveLocation() async {
-    await _geofireProvider.create(
-        _authProvider.getUser().uid,
-        _position.latitude,
-        _position.longitude
-    );
-    _progressDialog.hide();
-  }
-  
-  void connect() {
-    if(isConnect){
-      disconnect();
-    } else {
-      _progressDialog.show();
-      updateLocation();
-    }
-  }
-
-  void disconnect() {
-    _positionStream?.cancel();
-    _geofireProvider.delete(_authProvider.getUser().uid);
-  }
-
-  void checkIfIsConnect() {
-    Stream<DocumentSnapshot> status =
-    _geofireProvider.getLocationByIdStream(_authProvider.getUser().uid);
-
-     _statusSuscription = status.listen((DocumentSnapshot document ) {
-      if(document.exists) {
-        isConnect = true;
-      } else {
-        isConnect = false;
-      }
-      refresh();
-    });
-  }
-
   void updateLocation() async {
     try{
       await _determinePosition();
       _position = await Geolocator.getLastKnownPosition();
       centerPosition();
-      _saveLocation();
       addMarker(
           'driver',
           _position.latitude,
@@ -155,7 +120,6 @@ class DriverMapController {
             markerDriver
         );
         animateCameraToPosition(_position.latitude, _position.longitude);
-        _saveLocation();
         refresh();
       });
     } catch(error){
@@ -176,13 +140,11 @@ class DriverMapController {
     if(isLocationEnabled){
       print('GPS activado');
       updateLocation();
-      checkIfIsConnect();
     } else {
       print('GPS desactivado');
       bool locationGPS = await location.Location().requestService();
       if(locationGPS){
         updateLocation();
-        checkIfIsConnect();
         print('Activó el GPS');
       }
     }
@@ -229,11 +191,11 @@ class DriverMapController {
     GoogleMapController controller = await _mapController.future;
     if(context != null){
       controller.animateCamera(CameraUpdate.newCameraPosition(
-        CameraPosition(
-          bearing: 0,
-          target: LatLng(latitude, longitude),
-          zoom: 17
-        )
+          CameraPosition(
+              bearing: 0,
+              target: LatLng(latitude, longitude),
+              zoom: 17
+          )
       ));
     }
   }
@@ -241,7 +203,7 @@ class DriverMapController {
   Future<BitmapDescriptor> createMarkerImageFromAsset(String path) async {
     ImageConfiguration configuration = ImageConfiguration();
     BitmapDescriptor bitmapDescriptor =
-      await BitmapDescriptor.fromAssetImage(configuration, path);
+    await BitmapDescriptor.fromAssetImage(configuration, path);
     return bitmapDescriptor;
   }
 
@@ -256,19 +218,20 @@ class DriverMapController {
 
     MarkerId id = MarkerId(markerId);
     Marker marker = Marker(
-      markerId: id,
-      icon: iconMarker,
-      position: LatLng(lat, lng),
-      infoWindow: InfoWindow(title: title, snippet: content),
-      draggable: false,
-      zIndex: 2,
-      flat: true,
-      anchor: Offset(0.5,0.5),
-      rotation: _position.heading
+        markerId: id,
+        icon: iconMarker,
+        position: LatLng(lat, lng),
+        infoWindow: InfoWindow(title: title, snippet: content),
+        draggable: false,
+        zIndex: 2,
+        flat: true,
+        anchor: Offset(0.5,0.5),
+        rotation: _position.heading
     );
 
     markers[id] = marker;
 
   }
+
 
 }
