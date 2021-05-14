@@ -175,8 +175,10 @@ class _DriverMapPageState extends State<DriverMapPage> {
         mapType: MapType.normal,
         initialCameraPosition: _controller.initialPosition,
         onMapCreated: _controller.onMapCreated,
-        myLocationEnabled: true,
-        myLocationButtonEnabled: true,
+        myLocationEnabled: false,
+        myLocationButtonEnabled: false,
+        zoomControlsEnabled: true,
+        zoomGesturesEnabled: true,
         markers: Set<Marker>.of(_controller.markers.values),
     );
   }
