@@ -1,3 +1,5 @@
+import 'package:clone_uber_app/src/pages/client/travel_request/client_travel_request_page.dart';
+import 'package:clone_uber_app/src/providers/push_notification_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -26,6 +28,16 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    PushNotificationsProvider pushNotificationsProvider = new PushNotificationsProvider();
+    pushNotificationsProvider.initPushNotifications();
+  }
+
   @override
   Widget build(BuildContext context){
     return MaterialApp(
@@ -47,6 +59,7 @@ class _MyAppState extends State<MyApp> {
         'driver/map': (BuildContext context) => DriverMapPage(),
         'client/map': (BuildContext context) => ClientMapPage(),
         'client/travel/info': (BuildContext context) => ClientTravelInfoPage(),
+        'client/travel/request': (BuildContext context) => ClientTravelRequestPage(),
       },
     );
   }

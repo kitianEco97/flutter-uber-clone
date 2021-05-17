@@ -233,7 +233,7 @@ class _ClientMapPageState extends State<ClientMapPage> {
             children: [
               _infoCardLocation(
                   'Desde',
-                  _controller.from ?? 'Lugar de destino',
+                  _controller.from ?? 'Lugar de recogida',
                 () async {
                   _controller.showGoogleAutoComplete(true);
                 }
@@ -245,7 +245,7 @@ class _ClientMapPageState extends State<ClientMapPage> {
               SizedBox(height: 5),
               _infoCardLocation(
                   'Hasta',
-                  _controller.to ?? 'Lugar de recogida',
+                  _controller.to ?? 'Lugar de destino',
                       () async {
                     _controller.showGoogleAutoComplete(false);
                   }

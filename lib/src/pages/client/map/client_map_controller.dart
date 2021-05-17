@@ -16,6 +16,7 @@ import 'package:clone_uber_app/src/providers/auth_provider.dart';
 import 'package:clone_uber_app/src/providers/geofire_provider.dart';
 import 'package:clone_uber_app/src/providers/driver_provider.dart';
 import 'package:clone_uber_app/src/providers/client_provider.dart';
+import 'package:clone_uber_app/src/providers/push_notification_provider.dart';
 
 import 'package:clone_uber_app/src/utils/snackbar.dart' as utils;
 import 'package:clone_uber_app/src/utils/my_progress_dialog.dart';
@@ -47,6 +48,7 @@ class ClientMapController {
   GeofireProvider _geofireProvider;
   AuthProvider _authProvider;
   DriverProvider _driverProvider;
+  PushNotificationsProvider _pushNotificationsProvider;
 
   bool isConnect = false;
   ProgressDialog _progressDialog;
@@ -73,9 +75,11 @@ class ClientMapController {
     _authProvider = new AuthProvider();
     _driverProvider = new DriverProvider();
     _clientProvider = new ClientProvider();
+    _pushNotificationsProvider = new PushNotificationsProvider();
     _progressDialog = MyProgressDialog.createProgressDialog(context, 'Conectandose...');
     markerDriver = await createMarkerImageFromAsset('assets/img/icon_taxi.png');
     checkGPS();
+    //saveToken();
     getClientInfo();
   }
 
@@ -209,6 +213,10 @@ class ClientMapController {
     }
   }
 
+  /*void saveToken() {
+    _pushNotificationsProvider.saveToken(_authProvider.getUser().uid, 'client');
+  }*/
+
   void getNearbyDrivers() {
     Stream<List<DocumentSnapshot>> stream =
     _geofireProvider.getNearbyDrivers(_position.latitude, _position.longitude, 10);
@@ -237,7 +245,7 @@ class ClientMapController {
             point.latitude,
             point.longitude,
             'Conductor disponible',
-            '',
+            d.id,
             markerDriver,
         );
       }

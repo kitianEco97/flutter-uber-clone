@@ -13,25 +13,24 @@ class ClientTravelInfoPage extends StatefulWidget {
 
 class _ClientTravelInfoPageState extends State<ClientTravelInfoPage> {
 
-  ClientTravelInfoController _controller = new ClientTravelInfoController();
+  ClientTravelInfoController _con = new ClientTravelInfoController();
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      _controller.init(context, refresh);
+      _con.init(context, refresh);
     });
+
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _controller.key,
+      key: _con.key,
       body: Stack(
-
         children: [
-
           Align(
             child: _googleMapsWidget(),
             alignment: Alignment.topCenter,
@@ -45,16 +44,14 @@ class _ClientTravelInfoPageState extends State<ClientTravelInfoPage> {
             alignment: Alignment.topLeft,
           ),
           Align(
-            child: _cardKmInfo('0 km'),
+            child: _cardKmInfo(_con.km),
             alignment: Alignment.topRight,
           ),
           Align(
-            child: _cardMinInfo('0 Min'),
+            child: _cardMinInfo(_con.min),
             alignment: Alignment.topRight,
-          ),
-
+          )
         ],
-
       ),
     );
   }
@@ -64,22 +61,21 @@ class _ClientTravelInfoPageState extends State<ClientTravelInfoPage> {
       height: MediaQuery.of(context).size.height * 0.38,
       decoration: BoxDecoration(
           color: Colors.grey[200],
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30))
       ),
       child: Column(
         children: [
-
           ListTile(
             title: Text(
               'Desde',
               style: TextStyle(
-                fontSize: 15,
+                  fontSize: 15
               ),
             ),
             subtitle: Text(
-              'Carrera falsa con caller falsa',
+              _con.from ?? '',
               style: TextStyle(
-                fontSize: 13
+                  fontSize: 13
               ),
             ),
             leading: Icon(Icons.location_on),
@@ -88,11 +84,11 @@ class _ClientTravelInfoPageState extends State<ClientTravelInfoPage> {
             title: Text(
               'Hasta',
               style: TextStyle(
-                fontSize: 15,
+                  fontSize: 15
               ),
             ),
             subtitle: Text(
-              'Carrera falsa con caller falsa',
+              _con.to ?? '',
               style: TextStyle(
                   fontSize: 13
               ),
@@ -103,11 +99,11 @@ class _ClientTravelInfoPageState extends State<ClientTravelInfoPage> {
             title: Text(
               'Precio',
               style: TextStyle(
-                fontSize: 15,
+                  fontSize: 15
               ),
             ),
             subtitle: Text(
-              '\$ 0.0',
+              '${_con.minTotal ?? '0.0'}\$ - ${_con.maxTotal ?? '0.0'}\$',
               style: TextStyle(
                   fontSize: 13
               ),
@@ -117,13 +113,12 @@ class _ClientTravelInfoPageState extends State<ClientTravelInfoPage> {
           Container(
             margin: EdgeInsets.symmetric(horizontal: 30),
             child: ButtonApp(
-              onPressed: (){},
+              onPressed: _con.goToRequest,
               text: 'CONFIRMAR',
               textColor: Colors.black,
               color: Colors.amber,
             ),
           )
-
         ],
       ),
     );
@@ -131,30 +126,30 @@ class _ClientTravelInfoPageState extends State<ClientTravelInfoPage> {
 
   Widget _cardKmInfo(String km) {
     return SafeArea(
-      child: Container(
-        width: 100,
-        padding: EdgeInsets.symmetric(horizontal: 30),
-        margin: EdgeInsets.only(right: 10, top: 10),
-        decoration: BoxDecoration(
-          color: Colors.amber,
-          borderRadius: BorderRadius.all(Radius.circular(20))
-        ),
-        child: Text(km ?? '0 Km'),
-      )
+        child: Container(
+          width: 110,
+          padding: EdgeInsets.symmetric(horizontal: 30),
+          margin: EdgeInsets.only(right: 10, top: 10),
+          decoration: BoxDecoration(
+              color: Colors.amber,
+              borderRadius: BorderRadius.all(Radius.circular(20))
+          ),
+          child: Text(km ?? '0 Km', maxLines: 1,),
+        )
     );
   }
 
-  Widget _cardMinInfo(String km) {
+  Widget _cardMinInfo(String min) {
     return SafeArea(
         child: Container(
-          width: 100,
+          width: 110,
           padding: EdgeInsets.symmetric(horizontal: 30),
           margin: EdgeInsets.only(right: 10, top: 35),
           decoration: BoxDecoration(
               color: Colors.yellow,
               borderRadius: BorderRadius.all(Radius.circular(20))
           ),
-          child: Text(km ?? '0 Min'),
+          child: Text(min ?? '0 Min', maxLines: 1,),
         )
     );
   }
@@ -175,20 +170,16 @@ class _ClientTravelInfoPageState extends State<ClientTravelInfoPage> {
   Widget _googleMapsWidget() {
     return GoogleMap(
       mapType: MapType.normal,
-      initialCameraPosition: _controller.initialPosition,
-      onMapCreated: _controller.onMapCreated,
+      initialCameraPosition: _con.initialPosition,
+      onMapCreated: _con.onMapCreated,
       myLocationEnabled: false,
       myLocationButtonEnabled: false,
-      zoomControlsEnabled: true,
-      zoomGesturesEnabled: true,
-      markers: Set<Marker>.of(_controller.markers.values),
-      polylines: _controller.polylines,
+      markers: Set<Marker>.of(_con.markers.values),
+      polylines: _con.polylines,
     );
   }
 
   void refresh() {
-    setState(() {
-
-    });
+    setState(() {});
   }
 }

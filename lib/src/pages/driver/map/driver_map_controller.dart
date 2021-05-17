@@ -11,6 +11,7 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:clone_uber_app/src/providers/auth_provider.dart';
 import 'package:clone_uber_app/src/providers/geofire_provider.dart';
 import 'package:clone_uber_app/src/providers/driver_provider.dart';
+import 'package:clone_uber_app/src/providers/push_notification_provider.dart';
 
 import 'package:clone_uber_app/src/utils/snackbar.dart' as utils;
 import 'package:clone_uber_app/src/utils/my_progress_dialog.dart';
@@ -40,6 +41,7 @@ class DriverMapController {
   GeofireProvider _geofireProvider;
   AuthProvider _authProvider;
   DriverProvider _driverProvider;
+  PushNotificationsProvider _pushNotificationsProvider;
 
   bool isConnect = false;
   ProgressDialog _progressDialog;
@@ -55,9 +57,11 @@ class DriverMapController {
     _geofireProvider = new GeofireProvider();
     _authProvider = new AuthProvider();
     _driverProvider = new DriverProvider();
+    _pushNotificationsProvider = new PushNotificationsProvider();
     _progressDialog = MyProgressDialog.createProgressDialog(context, 'Conectandose...');
     markerDriver = await createMarkerImageFromAsset('assets/img/taxi_icon.png');
     checkGPS();
+    //saveToken();
     getDriverInfo();
   }
 
@@ -68,6 +72,10 @@ class DriverMapController {
       refresh();
     });
   }
+
+  /*void saveToken() {
+    _pushNotificationsProvider.saveToken(_authProvider.getUser().uid, 'driver');
+  }*/
 
   void openDrawer() {
     key.currentState.openDrawer();
