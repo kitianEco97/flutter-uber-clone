@@ -33,7 +33,7 @@ class ClientMapController {
   Completer<GoogleMapController> _mapController = Completer();
 
   CameraPosition initialPosition = CameraPosition(
-      target: LatLng(-33.136618,-70.7959367),
+      target: LatLng(1.2342774, -77.2645446),
       zoom: 14.0
   );
 
@@ -44,16 +44,16 @@ class ClientMapController {
 
   BitmapDescriptor markerDriver;
 
-  ClientProvider _clientProvider;
   GeofireProvider _geofireProvider;
   AuthProvider _authProvider;
   DriverProvider _driverProvider;
+  ClientProvider _clientProvider;
   PushNotificationsProvider _pushNotificationsProvider;
 
   bool isConnect = false;
   ProgressDialog _progressDialog;
 
-  StreamSubscription<DocumentSnapshot> _statusSubscription;
+  StreamSubscription<DocumentSnapshot> _statusSuscription;
   StreamSubscription<DocumentSnapshot> _clientInfoSubscription;
 
   Client client;
@@ -79,7 +79,7 @@ class ClientMapController {
     _progressDialog = MyProgressDialog.createProgressDialog(context, 'Conectandose...');
     markerDriver = await createMarkerImageFromAsset('assets/img/icon_taxi.png');
     checkGPS();
-    //saveToken();
+    saveToken();
     getClientInfo();
   }
 
@@ -97,7 +97,7 @@ class ClientMapController {
 
   void dispose() {
     _positionStream?.cancel();
-    _statusSubscription?.cancel();
+    _statusSuscription?.cancel();
     _clientInfoSubscription?.cancel();
   }
 
@@ -111,26 +111,28 @@ class ClientMapController {
     _mapController.complete(controller);
   }
 
-  void updateLocation() async {
-    try{
+  void updateLocation() async  {
+    try {
       await _determinePosition();
       _position = await Geolocator.getLastKnownPosition(); // UNA VEZ
       centerPosition();
       getNearbyDrivers();
-    } catch(error){
-      print('Error en la localización: $error');
+
+    } catch(error) {
+      print('Error en la localizacion: $error');
     }
   }
 
   void requestDriver() {
-    if(fromLatLng != null && toLatLng != null) {
+    if (fromLatLng != null && toLatLng != null) {
       Navigator.pushNamed(context, 'client/travel/info', arguments: {
         'from': from,
         'to': to,
         'fromLatLng': fromLatLng,
-        'toLatLng': toLatLng
+        'toLatLng': toLatLng,
       });
-    } else {
+    }
+    else {
       utils.Snackbar.showSnackbar(context, key, 'Seleccionar el lugar de recogida y destino');
     }
   }
@@ -138,11 +140,13 @@ class ClientMapController {
   void changeFromTo() {
     isFromSelected = !isFromSelected;
 
-    if(isFromSelected) {
+    if (isFromSelected) {
       utils.Snackbar.showSnackbar(context, key, 'Estas seleccionando el lugar de recogida');
-    } else {
+    }
+    else {
       utils.Snackbar.showSnackbar(context, key, 'Estas seleccionando el destino');
     }
+
   }
 
   Future<Null> showGoogleAutoComplete(bool isFrom) async {
@@ -150,59 +154,63 @@ class ClientMapController {
         context: context,
         apiKey: Environment.API_KEY_MAPS,
         language: 'es',
-      strictbounds: true,
-      radius: 5000,
-      location: places.Location(37.7576171,-122.5776844)
+        strictbounds: true,
+        radius: 5000,
+        location: places.Location(1.213611, -77.3123281)
+
     );
 
-    if(p != null) {
+    if (p != null) {
       places.PlacesDetailsResponse detail =
-            await _places.getDetailsByPlaceId(p.placeId, language: 'es');
+      await _places.getDetailsByPlaceId(p.placeId, language: 'es');
       double lat = detail.result.geometry.location.lat;
       double lng = detail.result.geometry.location.lng;
       List<Address> address = await Geocoder.local.findAddressesFromQuery(p.description);
-      if(address != null) {
-        if(address.length > 0) {
-          if(detail != null){
+      if (address != null) {
+        if (address.length > 0) {
+          if (detail != null) {
             String direction = detail.result.name;
             String city = address[0].locality;
-            String departament = address[0].adminArea;
+            String department = address[0].adminArea;
 
-            if(isFrom) {
-              from = '$direction, $city, $departament';
+            if (isFrom) {
+              from = '$direction, $city, $department';
               fromLatLng = new LatLng(lat, lng);
-            } else {
-              to = '$direction, $city, $departament';
+            }
+            else {
+              to = '$direction, $city, $department';
               toLatLng = new LatLng(lat, lng);
             }
-
-
 
             refresh();
           }
         }
       }
+
+
     }
   }
-  
+
   Future<Null> setLocationDraggableInfo() async {
-    if(initialPosition != null) {
+    if (initialPosition != null) {
       double lat = initialPosition.target.latitude;
       double lng = initialPosition.target.longitude;
 
       List<Placemark> address = await placemarkFromCoordinates(lat, lng);
 
-      if(address != null) {
-        if(address.length > 0) {
+      if (address != null) {
+        if (address.length > 0) {
           String direction = address[0].thoroughfare;
           String street = address[0].subThoroughfare;
           String city = address[0].locality;
           String department = address[0].administrativeArea;
           String country = address[0].country;
-          if(isFromSelected) {
+
+          if (isFromSelected) {
             from = '$direction #$street, $city, $department';
             fromLatLng = new LatLng(lat, lng);
-          } else {
+          }
+          else {
             to = '$direction #$street, $city, $department';
             toLatLng = new LatLng(lat, lng);
           }
@@ -213,32 +221,37 @@ class ClientMapController {
     }
   }
 
-  /*void saveToken() {
+  void saveToken() {
     _pushNotificationsProvider.saveToken(_authProvider.getUser().uid, 'client');
-  }*/
+  }
 
   void getNearbyDrivers() {
     Stream<List<DocumentSnapshot>> stream =
-    _geofireProvider.getNearbyDrivers(_position.latitude, _position.longitude, 10);
+    _geofireProvider.getNearbyDrivers(_position.latitude, _position.longitude, 50);
 
     stream.listen((List<DocumentSnapshot> documentList) {
 
-      for(MarkerId m in markers.keys){
+      for (DocumentSnapshot d in documentList) {
+        print('DOCUMENT: $d');
+      }
+
+      for (MarkerId m in markers.keys) {
         bool remove = true;
 
-        for(DocumentSnapshot d in documentList){
-          if(m.value == d.id){
+        for (DocumentSnapshot d in documentList) {
+          if (m.value == d.id) {
             remove = false;
           }
         }
 
-        if(remove) {
+        if (remove) {
           markers.remove(m);
           refresh();
         }
+
       }
 
-      for(DocumentSnapshot d in documentList) {
+      for (DocumentSnapshot d in documentList) {
         GeoPoint point = d.data()['position']['geopoint'];
         addMarker(
             d.id,
@@ -246,76 +259,71 @@ class ClientMapController {
             point.longitude,
             'Conductor disponible',
             d.id,
-            markerDriver,
+            markerDriver
         );
       }
+
       refresh();
+
     });
   }
 
   void centerPosition() {
-    if(_position != null){
+    if (_position != null) {
       animateCameraToPosition(_position.latitude, _position.longitude);
-    } else {
-      utils.Snackbar.showSnackbar(context, key, 'Activa el GPS para obtener la posición');
+    }
+    else {
+      utils.Snackbar.showSnackbar(context, key, 'Activa el GPS para obtener la posicion');
     }
   }
 
   void checkGPS() async {
     bool isLocationEnabled = await Geolocator.isLocationServiceEnabled();
-    if(isLocationEnabled){
-      print('GPS activado');
+    if (isLocationEnabled) {
+      print('GPS ACTIVADO');
       updateLocation();
-    } else {
-      print('GPS desactivado');
+    }
+    else {
+      print('GPS DESACTIVADO');
       bool locationGPS = await location.Location().requestService();
-      if(locationGPS){
+      if (locationGPS) {
         updateLocation();
-        print('Activó el GPS');
+        print('ACTIVO EL GPS');
       }
     }
+
   }
 
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Test if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
       return Future.error('Location services are disabled.');
     }
 
     permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permantly denied, we cannot request permissions.');
+    }
+
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-        return Future.error('Location permissions are denied');
+      if (permission != LocationPermission.whileInUse &&
+          permission != LocationPermission.always) {
+        return Future.error(
+            'Location permissions are denied (actual value: $permission).');
       }
     }
 
-    if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
-    }
-
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition();
   }
 
   Future animateCameraToPosition(double latitude, double longitude) async {
     GoogleMapController controller = await _mapController.future;
-    if(context != null){
+    if (controller != null) {
       controller.animateCamera(CameraUpdate.newCameraPosition(
           CameraPosition(
               bearing: 0,
@@ -340,7 +348,7 @@ class ClientMapController {
       String title,
       String content,
       BitmapDescriptor iconMarker
-      ){
+      ) {
 
     MarkerId id = MarkerId(markerId);
     Marker marker = Marker(
@@ -351,13 +359,12 @@ class ClientMapController {
         draggable: false,
         zIndex: 2,
         flat: true,
-        anchor: Offset(0.5,0.5),
+        anchor: Offset(0.5, 0.5),
         rotation: _position.heading
     );
 
     markers[id] = marker;
 
   }
-
 
 }

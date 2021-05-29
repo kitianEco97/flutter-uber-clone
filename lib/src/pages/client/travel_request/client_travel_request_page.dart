@@ -35,6 +35,7 @@ class _ClientTravelRequestPageState extends State<ClientTravelRequestPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _controller.key,
       body: Column(
         children: [
           _driverInfo(),

@@ -12,16 +12,15 @@ class ClientProvider {
   Future<void> create(Client client) {
     String errorMessage;
 
-    try{
+    try {
       return _ref.doc(client.id).set(client.toJson());
-    } catch(error){
+    } catch(error) {
       errorMessage = error.code;
     }
 
-    if(errorMessage != null){
+    if (errorMessage != null) {
       return Future.error(errorMessage);
     }
-
   }
 
   Stream<DocumentSnapshot> getByIdStream(String id) {
@@ -31,13 +30,12 @@ class ClientProvider {
   Future<Client> getById(String id) async {
     DocumentSnapshot document = await _ref.doc(id).get();
 
-    if(document.exists){
+    if (document.exists) {
       Client client = Client.fromJson(document.data());
       return client;
     }
 
     return null;
-
   }
 
   Future<void> update(Map<String, dynamic> data, String id) {

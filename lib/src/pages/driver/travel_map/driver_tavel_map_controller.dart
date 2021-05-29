@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart' as location;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -20,8 +21,9 @@ import 'package:clone_uber_app/src/utils/my_progress_dialog.dart';
 import 'package:clone_uber_app/src/models/driver.dart';
 import 'package:clone_uber_app/src/models/travel_info.dart';
 
+import 'package:clone_uber_app/src/api/environment.dart';
 
-class DriverMapController {
+class DriverTravelMapController {
 
   BuildContext context;
   Function refresh;
@@ -39,6 +41,8 @@ class DriverMapController {
   StreamSubscription<Position> _positionStream;
 
   BitmapDescriptor markerDriver;
+  BitmapDescriptor fromMarker;
+  BitmapDescriptor toMarker;
 
   GeofireProvider _geofireProvider;
   AuthProvider _authProvider;
@@ -52,6 +56,9 @@ class DriverMapController {
   StreamSubscription<DocumentSnapshot> _statusSuscription;
   StreamSubscription<DocumentSnapshot> _driverInfoSuscription;
 
+  Set<Polyline> polylines = {};
+  List<LatLng> points = new List();
+
   Driver driver;
 
   String _idTravel;
@@ -59,7 +66,6 @@ class DriverMapController {
   Future init(BuildContext context, Function refresh) async {
     this.context = context;
     this.refresh = refresh;
-
     _idTravel = ModalRoute.of(context).settings.arguments as String;
 
     _geofireProvider = new GeofireProvider();
@@ -69,9 +75,47 @@ class DriverMapController {
     _pushNotificationsProvider = new PushNotificationsProvider();
     _progressDialog = MyProgressDialog.createProgressDialog(context, 'Conectandose...');
     markerDriver = await createMarkerImageFromAsset('assets/img/taxi_icon.png');
+    fromMarker = await createMarkerImageFromAsset('assets/img/map_pin_red.png');
+    toMarker = await createMarkerImageFromAsset('assets/img/map_pin_blue.png');
     checkGPS();
-    saveToken();
     getDriverInfo();
+  }
+
+  void _getTravelInfo() async {
+    TravelInfo travelInfo = await _travelInfoProvider.getById(_idTravel);
+    LatLng from = new LatLng(_position.latitude, _position.longitude);
+    LatLng to = new LatLng(travelInfo.fromLat, travelInfo.fromLng);
+
+    setPolylines(from, to);
+  }
+
+  Future<void> setPolylines(LatLng from, LatLng to) async {
+    PointLatLng pointFromLatLng = PointLatLng(from.latitude, from.longitude);
+    PointLatLng pointToLatLng = PointLatLng(to.latitude, to.longitude);
+
+    PolylineResult result = await PolylinePoints().getRouteBetweenCoordinates(
+        Environment.API_KEY_MAPS,
+        pointFromLatLng,
+        pointToLatLng
+    );
+
+    for (PointLatLng point in result.points) {
+      points.add(LatLng(point.latitude, point.longitude));
+    }
+
+    Polyline polyline = Polyline(
+        polylineId: PolylineId('poly'),
+        color: Colors.amber,
+        points: points,
+        width: 6
+    );
+
+    polylines.add(polyline);
+
+    addSimpleMarker('from', to.latitude, to.longitude, 'Recoger aqui', '', fromMarker);
+    //addMarker('to', toLatLng.latitude, toLatLng.longitude, 'Destino', '', toMarker);
+
+    refresh();
   }
 
   void getDriverInfo() {
@@ -82,23 +126,10 @@ class DriverMapController {
     });
   }
 
-  void saveToken() {
-    _pushNotificationsProvider.saveToken(_authProvider.getUser().uid, 'driver');
-  }
-
-  void openDrawer() {
-    key.currentState.openDrawer();
-  }
-
   void dispose() {
     _positionStream?.cancel();
     _statusSuscription?.cancel();
     _driverInfoSuscription?.cancel();
-  }
-
-  void signOut() async {
-    await _authProvider.signOut();
-    Navigator.pushNamedAndRemoveUntil(context, 'home', (route) => false);
   }
 
   void onMapCreated(GoogleMapController controller) {
@@ -115,52 +146,21 @@ class DriverMapController {
     _progressDialog.hide();
   }
 
-  void connect() {
-    if (isConnect) {
-      disconnect();
-    }
-    else {
-      _progressDialog.show();
-      updateLocation();
-    }
-  }
-
-  void disconnect() {
-    _positionStream?.cancel();
-    _geofireProvider.delete(_authProvider.getUser().uid);
-  }
-
-  void checkIfIsConnect() {
-    Stream<DocumentSnapshot> status =
-    _geofireProvider.getLocationByIdStream(_authProvider.getUser().uid);
-
-    _statusSuscription = status.listen((DocumentSnapshot document) {
-      if (document.exists) {
-        isConnect = true;
-      }
-      else {
-        isConnect = false;
-      }
-
-      refresh();
-    });
-
-  }
-
   void updateLocation() async  {
     try {
       await _determinePosition();
       _position = await Geolocator.getLastKnownPosition();
+      _getTravelInfo();
       centerPosition();
       saveLocation();
 
       addMarker(
-          'driver',
-          _position.latitude,
-          _position.longitude,
-          'Tu posicion',
-          '',
-          markerDriver,
+        'driver',
+        _position.latitude,
+        _position.longitude,
+        'Tu posicion',
+        '',
+        markerDriver,
       );
       refresh();
 
@@ -201,14 +201,12 @@ class DriverMapController {
     if (isLocationEnabled) {
       print('GPS ACTIVADO');
       updateLocation();
-      checkIfIsConnect();
     }
     else {
       print('GPS DESACTIVADO');
       bool locationGPS = await location.Location().requestService();
       if (locationGPS) {
         updateLocation();
-        checkIfIsConnect();
         print('ACTIVO EL GPS');
       }
     }
@@ -282,6 +280,27 @@ class DriverMapController {
         flat: true,
         anchor: Offset(0.5, 0.5),
         rotation: _position.heading
+    );
+
+    markers[id] = marker;
+
+  }
+
+  void addSimpleMarker(
+      String markerId,
+      double lat,
+      double lng,
+      String title,
+      String content,
+      BitmapDescriptor iconMarker
+      ) {
+
+    MarkerId id = MarkerId(markerId);
+    Marker marker = Marker(
+        markerId: id,
+        icon: iconMarker,
+        position: LatLng(lat, lng),
+        infoWindow: InfoWindow(title: title, snippet: content),
     );
 
     markers[id] = marker;
