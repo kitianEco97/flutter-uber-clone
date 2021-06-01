@@ -13,6 +13,8 @@ import 'package:clone_uber_app/src/pages/client/travel_map/client_travel_map_pag
 import 'package:clone_uber_app/src/pages/driver/register/driver_register_page.dart';
 import 'package:clone_uber_app/src/pages/driver/map/driver_map_page.dart';
 import 'package:clone_uber_app/src/pages/driver/travel_map/driver_travel_map_page.dart';
+import 'package:clone_uber_app/src/pages/driver/driver_calification/driver_travel_calification_page.dart';
+import 'package:clone_uber_app/src/pages/client/travel_calification/client_travel_calification_page.dart';
 
 import 'package:clone_uber_app/src/pages/client/travel_request/client_travel_request_page.dart';
 import 'package:clone_uber_app/src/pages/driver/travel_request/driver_travel_request_page.dart';
@@ -85,10 +87,12 @@ class _MyAppState extends State<MyApp> {
         'driver/map': (BuildContext context) => DriverMapPage(),
         'driver/travel/request': (BuildContext context) => DriverTravelRequestPage(),
         'driver/travel/map': (BuildContext context) => DriverTravelMapPage(),
+        'driver/travel/calification': (BuildContext context) => DriverTravelCalificationPage(),
         'client/map': (BuildContext context) => ClientMapPage(),
         'client/travel/info': (BuildContext context) => ClientTravelInfoPage(),
         'client/travel/request': (BuildContext context) => ClientTravelRequestPage(),
         'client/travel/map': (BuildContext context) => ClientTravelMapPage(),
+        'client/travel/calification': (BuildContext context) => ClientTravelCalificationPage(),
 
       },
     );

@@ -45,7 +45,8 @@ dependencies:
   lottie: ^0.7.0+1
   firebase_messaging: 8.0.0-dev.14
   permission: ^0.1.6
-
+  modal_bottom_sheet: ^1.0.0+1
+  flutter_rating_bar: ^3.2.0+1
 
 
 dev_dependencies:

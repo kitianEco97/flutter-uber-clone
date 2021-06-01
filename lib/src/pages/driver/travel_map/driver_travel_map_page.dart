@@ -40,8 +40,8 @@ class _DriverTravelMapPageState extends State<DriverTravelMapPage> {
                     _buttonUserInfo(),
                     Column(
                       children: [
-                        _cardKmInfo('0'),
-                        _cardMinInfo('0')
+                        _cardKmInfo(_controller.km?.toStringAsFixed(1)),
+                        _cardMinInfo(_controller.seconds?.toString())
                       ],
                     ),
                     
@@ -97,7 +97,7 @@ class _DriverTravelMapPageState extends State<DriverTravelMapPage> {
 
   Widget _buttonUserInfo(){
     return GestureDetector(
-      onTap: (){},
+      onTap: _controller.openBottomSheet,
       child: Container(
         alignment: Alignment.centerLeft,
         margin: EdgeInsets.symmetric(horizontal: 5),
@@ -147,9 +147,9 @@ class _DriverTravelMapPageState extends State<DriverTravelMapPage> {
       alignment: Alignment.center,
       margin: EdgeInsets.symmetric(horizontal: 80, vertical: 40),
       child: ButtonApp(
-        onPressed: (){},
-        text: 'Iniciar viaje',
-        color: Colors.amber,
+        onPressed: _controller.updateStatus,
+        text: _controller.currentStatus,
+        color: _controller.colorStatus,
         textColor: Colors.black,
       ),
     );

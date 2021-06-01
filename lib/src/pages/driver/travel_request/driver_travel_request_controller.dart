@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:clone_uber_app/src/models/client.dart';
 import 'package:clone_uber_app/src/providers/auth_provider.dart';
 import 'package:clone_uber_app/src/providers/client_provider.dart';
+import 'package:clone_uber_app/src/providers/geofire_provider.dart';
 import 'package:clone_uber_app/src/providers/travel_info_provider.dart';
 import 'package:clone_uber_app/src/utils/shared_pref.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ class DriverTravelRequestController {
   ClientProvider _clientProvider;
   TravelInfoProvider _travelInfoProvider;
   AuthProvider _authProvider;
+  GeofireProvider _geofireProvider;
 
   Timer _timer;
   int seconds = 30;
@@ -35,6 +37,7 @@ class DriverTravelRequestController {
     _clientProvider = new ClientProvider();
     _travelInfoProvider = new TravelInfoProvider();
     _authProvider = new AuthProvider();
+    _geofireProvider = new GeofireProvider();
 
     Map<String, dynamic> arguments = ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
 
@@ -71,8 +74,9 @@ class DriverTravelRequestController {
     _timer?.cancel();
 
     _travelInfoProvider.update(data, idClient);
-    //Navigator.pushNamedAndRemoveUntil(context, 'driver/travel/map', (route) => false, arguments: idClient);
-    Navigator.pushReplacementNamed(context, 'driver/travel/map', arguments: idClient);
+    _geofireProvider.delete(_authProvider.getUser().uid);
+    Navigator.pushNamedAndRemoveUntil(context, 'driver/travel/map', (route) => false, arguments: idClient);
+    //Navigator.pushReplacementNamed(context, 'driver/travel/map', arguments: idClient);
   }
 
   void cancelTravel() {

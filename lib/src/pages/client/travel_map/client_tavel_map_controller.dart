@@ -7,6 +7,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart' as location;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 
 import 'package:clone_uber_app/src/providers/auth_provider.dart';
@@ -20,6 +21,8 @@ import 'package:clone_uber_app/src/utils/my_progress_dialog.dart';
 
 import 'package:clone_uber_app/src/models/driver.dart';
 import 'package:clone_uber_app/src/models/travel_info.dart';
+
+import 'package:clone_uber_app/src/widgets/bottom_sheet_client_info.dart';
 
 import 'package:clone_uber_app/src/api/environment.dart';
 class ClientTravelMapController {
@@ -64,6 +67,14 @@ class ClientTravelMapController {
   String currentStatus = '';
   Color colorStatus = Colors.white;
 
+  bool isPickUpTravel = false;
+  bool isStartTravel = false;
+  bool isFinishTravel = false;
+
+  StreamSubscription<DocumentSnapshot> _streamLocationController;
+
+  StreamSubscription<DocumentSnapshot> _streamTravelController;
+
   Future init(BuildContext context, Function refresh) async {
     this.context = context;
     this.refresh = refresh;
@@ -84,7 +95,7 @@ class ClientTravelMapController {
 
   void getDriverLocation(String idDriver) {
     Stream<DocumentSnapshot> stream = _geofireProvider.getLocationByIdStream(idDriver);
-    stream.listen((DocumentSnapshot document) {
+    _streamLocationController = stream.listen((DocumentSnapshot document) {
       GeoPoint geoPoint = document.data()['position']['geopoint'];
       _driverLatLng = new LatLng(geoPoint.latitude, geoPoint.longitude);
       addSimpleMarker(
@@ -107,15 +118,20 @@ class ClientTravelMapController {
   }
 
   void pickupTravel() {
-    LatLng from = new LatLng(_driverLatLng.latitude, _driverLatLng.longitude);
-    LatLng to = new LatLng(travelInfo.fromLat, travelInfo.fromLng);
-    addSimpleMarker('from', to.latitude, to.longitude, 'Recoger aqui', '', fromMarker);
-    setPolylines(from, to);
+
+    if(!isPickUpTravel){
+      isPickUpTravel = true;
+      LatLng from = new LatLng(_driverLatLng.latitude, _driverLatLng.longitude);
+      LatLng to = new LatLng(travelInfo.fromLat, travelInfo.fromLng);
+      addSimpleMarker('from', to.latitude, to.longitude, 'Recoger aqui', '', fromMarker);
+      setPolylines(from, to);
+    }
+
   }
 
   void checkTravelStatus() async {
     Stream<DocumentSnapshot> stream = _travelInfoProvider.getByIdStream(_authProvider.getUser().uid);
-    stream.listen((DocumentSnapshot document) {
+    _streamTravelController = stream.listen((DocumentSnapshot document) {
       travelInfo = TravelInfo.fromJson(document.data());
 
       if(travelInfo.status == 'accepted') {
@@ -125,17 +141,66 @@ class ClientTravelMapController {
       } else if(travelInfo.status == 'started') {
         currentStatus = 'Viaje iniciado';
         colorStatus = Colors.amber;
+        startTravel();
       } else if(travelInfo.status == 'finished') {
         currentStatus = 'Viaje finalizado';
         colorStatus = Colors.cyan;
+        finishTravel();
       }
 
       refresh();
     });
   }
 
+  void finishTravel() {
+    if(!isFinishTravel) {
+      isFinishTravel = true;
+      Navigator.pushNamedAndRemoveUntil(context, 'client/travel/calification', (route) => false, arguments: travelInfo.idTravelHistory);
+    }
+  }
+
+  void openBottomSheet() {
+    if(driver == null) return;
+
+    showMaterialModalBottomSheet(
+        context: context,
+        builder: (context) => BottomSheetClientInfo(
+          imageUrl: '',
+          username: driver?.username,
+          email: driver?.email,
+          plate: driver?.plate,
+        )
+    );
+  }
+
+  void startTravel() {
+
+    if(!isStartTravel) {
+      isStartTravel = true;
+      polylines = {};
+      points = List();
+      markers.removeWhere((key, marker) => marker.markerId.value == 'from');
+      addSimpleMarker(
+          'to',
+          travelInfo.toLat,
+          travelInfo.toLng,
+          'Destino',
+          '',
+          toMarker
+      );
+
+      LatLng from = new LatLng(_driverLatLng.latitude, _driverLatLng.longitude);
+      LatLng to = new LatLng(travelInfo.toLat, travelInfo.toLng);
+
+      setPolylines(from, to);
+      //refresh();
+    }
+
+  }
+
   void _getTravelInfo() async {
     travelInfo = await _travelInfoProvider.getById(_authProvider.getUser().uid);
+    animateCameraToPosition(travelInfo.fromLat, travelInfo.fromLng);
     getDriverInfo(travelInfo.idDriver);
     getDriverLocation(travelInfo.idDriver);
   }
@@ -176,6 +241,8 @@ class ClientTravelMapController {
   void dispose() {
     _statusSuscription?.cancel();
     _driverInfoSuscription?.cancel();
+    _streamLocationController?.cancel();
+    _streamTravelController?.cancel();
   }
 
   void onMapCreated(GoogleMapController controller) {

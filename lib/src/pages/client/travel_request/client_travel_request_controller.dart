@@ -65,8 +65,8 @@ class ClientTravelRequestController {
       TravelInfo travelInfo = TravelInfo.fromJson(document.data());
 
       if(travelInfo.idDriver != null && travelInfo.status == 'accepted') {
-        //Navigator.pushNamedAndRemoveUntil(context, 'client/travel/map', (route) => false);
-        Navigator.pushReplacementNamed(context, 'client/travel/map');
+        Navigator.pushNamedAndRemoveUntil(context, 'client/travel/map', (route) => false);
+        //Navigator.pushReplacementNamed(context, 'client/travel/map');
       } else if(travelInfo.status == 'no_accepted') {
         utils.Snackbar.showSnackbar(context, key, 'El conductor no acepto tu solicitud');
 
