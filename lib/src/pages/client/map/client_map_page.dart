@@ -116,7 +116,7 @@ class _ClientMapPageState extends State<ClientMapPage> {
             title: Text('Editar perfil'),
             trailing: Icon(Icons.edit),
             //leading: Icon(Icons.cancel),
-            onTap: (){},
+            onTap: _controller.goToEditPage,
           ),
           ListTile(
             title: Text('Cerrar sesión'),

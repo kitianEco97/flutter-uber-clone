@@ -90,6 +90,10 @@ class DriverMapController {
     key.currentState.openDrawer();
   }
 
+  void goToEditPage() {
+    Navigator.pushNamed(context, 'driver/edit');
+  }
+
   void dispose() {
     _positionStream?.cancel();
     _statusSuscription?.cancel();

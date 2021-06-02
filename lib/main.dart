@@ -9,12 +9,14 @@ import 'package:clone_uber_app/src/pages/client/register/client_register_page.da
 import 'package:clone_uber_app/src/pages/client/travel_info/client_travel_info_page.dart';
 import 'package:clone_uber_app/src/pages/client/map/client_map_page.dart';
 import 'package:clone_uber_app/src/pages/client/travel_map/client_travel_map_page.dart';
-
-import 'package:clone_uber_app/src/pages/driver/register/driver_register_page.dart';
-import 'package:clone_uber_app/src/pages/driver/map/driver_map_page.dart';
-import 'package:clone_uber_app/src/pages/driver/travel_map/driver_travel_map_page.dart';
-import 'package:clone_uber_app/src/pages/driver/driver_calification/driver_travel_calification_page.dart';
+import 'package:clone_uber_app/src/pages/client/edit/client_edit_page.dart';
 import 'package:clone_uber_app/src/pages/client/travel_calification/client_travel_calification_page.dart';
+
+import 'package:clone_uber_app/src/pages/driver/edit/driver_edit_page.dart';
+import 'package:clone_uber_app/src/pages/driver/driver_calification/driver_travel_calification_page.dart';
+import 'package:clone_uber_app/src/pages/driver/map/driver_map_page.dart';
+import 'package:clone_uber_app/src/pages/driver/register/driver_register_page.dart';
+import 'package:clone_uber_app/src/pages/driver/travel_map/driver_travel_map_page.dart';
 
 import 'package:clone_uber_app/src/pages/client/travel_request/client_travel_request_page.dart';
 import 'package:clone_uber_app/src/pages/driver/travel_request/driver_travel_request_page.dart';
@@ -85,6 +87,7 @@ class _MyAppState extends State<MyApp> {
         'client/register': (BuildContext context) => ClientRegisterPage(),
         'driver/register': (BuildContext context) => DriverRegisterPage(),
         'driver/map': (BuildContext context) => DriverMapPage(),
+        'driver/edit': (BuildContext context) => DriverEditPage(),
         'driver/travel/request': (BuildContext context) => DriverTravelRequestPage(),
         'driver/travel/map': (BuildContext context) => DriverTravelMapPage(),
         'driver/travel/calification': (BuildContext context) => DriverTravelCalificationPage(),
@@ -93,6 +96,7 @@ class _MyAppState extends State<MyApp> {
         'client/travel/request': (BuildContext context) => ClientTravelRequestPage(),
         'client/travel/map': (BuildContext context) => ClientTravelMapPage(),
         'client/travel/calification': (BuildContext context) => ClientTravelCalificationPage(),
+        'client/edit': (BuildContext context) => ClientEditPage(),
 
       },
     );

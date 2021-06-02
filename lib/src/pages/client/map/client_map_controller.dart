@@ -221,6 +221,10 @@ class ClientMapController {
     }
   }
 
+  void goToEditPage() {
+    Navigator.pushNamed(context, 'client/edit');
+  }
+
   void saveToken() {
     _pushNotificationsProvider.saveToken(_authProvider.getUser().uid, 'client');
   }

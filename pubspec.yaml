@@ -47,7 +47,8 @@ dependencies:
   permission: ^0.1.6
   modal_bottom_sheet: ^1.0.0+1
   flutter_rating_bar: ^3.2.0+1
-
+  image_picker: ^0.6.5+2
+  firebase_storage: ^7.0.0
 
 dev_dependencies:
   flutter_test:
