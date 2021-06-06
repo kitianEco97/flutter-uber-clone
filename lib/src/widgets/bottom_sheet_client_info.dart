@@ -34,7 +34,9 @@ class _BottomSheetClientInfoState extends State<BottomSheetClientInfo> {
           ),
           SizedBox(height: 15),
           CircleAvatar(
-            backgroundImage: AssetImage('assets/img/profile.jpg'),
+            backgroundImage: widget.imageUrl != null
+                ? NetworkImage(widget.imageUrl)
+                : AssetImage('assets/img/profile.jpg'),
             radius: 50,
           ),
           ListTile(

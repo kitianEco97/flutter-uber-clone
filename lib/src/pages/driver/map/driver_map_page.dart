@@ -96,7 +96,9 @@ class _DriverMapPageState extends State<DriverMapPage> {
                   ),
                   SizedBox(height: 10),
                   CircleAvatar(
-                    backgroundImage: AssetImage('assets/img/profile.jpg'),
+                    backgroundImage: _controller.driver?.image != null
+                        ? NetworkImage(_controller.driver?.image)
+                        : AssetImage('assets/img/profile.jpg'),
                     radius: 40,
                   )
                 ]

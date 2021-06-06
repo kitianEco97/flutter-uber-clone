@@ -22,9 +22,6 @@ class ClientEditController {
   Function refresh;
 
   TextEditingController usernameController = new TextEditingController();
-  TextEditingController emailController = new TextEditingController();
-  TextEditingController passwordController = new TextEditingController();
-  TextEditingController confirmPasswordController = new TextEditingController();
 
   AuthProvider _authProvider;
   ClientProvider _clientProvider;
@@ -34,6 +31,8 @@ class ClientEditController {
   PickedFile pickedFile;
   File imageFile;
 
+  Client client;
+
   Future init (BuildContext context, Function refresh){
     this.context = context;
     this.refresh = refresh;
@@ -41,6 +40,14 @@ class ClientEditController {
     _clientProvider = new ClientProvider();
     _storageProvider = new StorageProvider();
     _progressDialog = MyProgressDialog.createProgressDialog(context, "Espere un momento...");
+    getUserInfo();
+  }
+
+  void getUserInfo() async {
+    client = await _clientProvider.getById(_authProvider.getUser().uid);
+    usernameController.text = client.username;
+
+    refresh();
   }
 
   void showAlertDialog() {
@@ -85,15 +92,30 @@ class ClientEditController {
     }
 
     _progressDialog.show();
-    TaskSnapshot snapshot = await _storageProvider.uploadFile(pickedFile);
-    String imageUrl = await snapshot.ref.getDownloadURL();
 
-    Map<String, dynamic> data = {
-      'image' : imageUrl
-    };
+    if(pickedFile == null) {
+      Map<String, dynamic> data = {
+        'image' : client?.image?? null,
+        'username' : username,
+      };
 
-    await _clientProvider.update(data, _authProvider.getUser().uid);
-    _progressDialog.hide();
+      await _clientProvider.update(data, _authProvider.getUser().uid);
+      _progressDialog.hide();
+
+    } else {
+      TaskSnapshot snapshot = await _storageProvider.uploadFile(pickedFile);
+      String imageUrl = await snapshot.ref.getDownloadURL();
+
+      Map<String, dynamic> data = {
+        'image' : imageUrl,
+        'username' : username,
+      };
+
+      await _clientProvider.update(data, _authProvider.getUser().uid);
+    }
+
+      _progressDialog.hide();
+
     utils.Snackbar.showSnackbar(context, key, 'Los datos se actualizarón');
   }
 

@@ -165,7 +165,7 @@ class ClientTravelMapController {
     showMaterialModalBottomSheet(
         context: context,
         builder: (context) => BottomSheetClientInfo(
-          imageUrl: '',
+          imageUrl: driver?.image,
           username: driver?.username,
           email: driver?.email,
           plate: driver?.plate,

@@ -112,12 +112,13 @@ class _ClientEditPageState extends State<ClientEditPage> {
           children: [
 
             GestureDetector(
-              onTap: (){
-                // ignore: unnecessary_statements
-                _controller.showAlertDialog;
-              },
+              onTap: _controller.showAlertDialog,
               child: CircleAvatar(
-                backgroundImage: AssetImage(_controller.imageFile?.path?? 'assets/img/profile.jpg'),
+                backgroundImage: _controller.imageFile != null ?
+                AssetImage(_controller.imageFile?.path?? 'assets/img/profile.jpg') :
+                  _controller.client?.image != null
+                    ? NetworkImage(_controller.client?.image)
+                    : AssetImage(_controller.imageFile?.path?? 'assets/img/profile.jpg'),
                 radius: 50,
               ),
             ),
@@ -125,10 +126,10 @@ class _ClientEditPageState extends State<ClientEditPage> {
             Container(
               margin: EdgeInsets.only(top:30),
               child: Text(
-                'Fácil y rapido',
+                _controller.client?.email ?? '',
                 style: TextStyle(
                     fontFamily: 'Pacifico',
-                    fontSize: 22,
+                    fontSize: 17,
                     color: Colors.white,
                     fontWeight: FontWeight.bold
                 ),

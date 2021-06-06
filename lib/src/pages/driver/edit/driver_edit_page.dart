@@ -26,7 +26,7 @@ class _DriverEditPageState extends State<DriverEditPage> {
     print('InitState');
 
     SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      _controller.init(context);
+      _controller.init(context, refresh);
     });
 
   }
@@ -77,7 +77,7 @@ class _DriverEditPageState extends State<DriverEditPage> {
           vertical: 25
       ),
       child: ButtonApp(
-        onPressed: _controller.register,
+        onPressed: _controller.update,
         text:  'Actualizar ahora',
         color: utils.Colors.uber_clone_color,
         textColor: Colors.white,
@@ -142,15 +142,22 @@ class _DriverEditPageState extends State<DriverEditPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
 
-            CircleAvatar(
-              backgroundImage: AssetImage('assets/img/profile.jpg'),
-              radius: 50,
+            GestureDetector(
+              onTap: _controller.showAlertDialog,
+              child: CircleAvatar(
+                backgroundImage: _controller.imageFile != null ?
+                AssetImage(_controller.imageFile?.path?? 'assets/img/profile.jpg') :
+                _controller.driver?.image != null
+                    ? NetworkImage(_controller.driver?.image)
+                    : AssetImage(_controller.imageFile?.path?? 'assets/img/profile.jpg'),
+                radius: 50,
+              ),
             ),
 
             Container(
               margin: EdgeInsets.only(top:30),
               child: Text(
-                'Fácil y rapido',
+                _controller.driver?.email ?? '',
                 style: TextStyle(
                     fontFamily: 'Pacifico',
                     fontSize: 22,
@@ -164,6 +171,12 @@ class _DriverEditPageState extends State<DriverEditPage> {
         ),
       ),
     );
+  }
+
+  void refresh() {
+    setState(() {
+
+    });
   }
 
 }

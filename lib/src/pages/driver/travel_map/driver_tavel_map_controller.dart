@@ -366,7 +366,7 @@ class DriverTravelMapController {
     showMaterialModalBottomSheet(
         context: context,
         builder: (context) => BottomSheetDriverInfo(
-          imageUrl: '',
+          imageUrl: _client?.image,
           username: _client?.username,
           email: _client?.email,
         )

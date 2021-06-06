@@ -1,11 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
 import 'package:progress_dialog/progress_dialog.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:clone_uber_app/src/providers/driver_provider.dart';
 import 'package:clone_uber_app/src/providers/auth_provider.dart';
+import 'package:clone_uber_app/src/providers/storage_provider.dart';
 import 'package:clone_uber_app/src/providers/client_provider.dart';
+
 import 'package:clone_uber_app/src/utils/snackbar.dart' as utils;
 import 'package:clone_uber_app/src/utils/my_progress_dialog.dart';
+
 import 'package:clone_uber_app/src/models/client.dart';
 import 'package:clone_uber_app/src/models/driver.dart';
 
@@ -15,9 +23,6 @@ class DriverEditController {
   GlobalKey<ScaffoldState> key = new GlobalKey<ScaffoldState>();
 
   TextEditingController usernameController = new TextEditingController();
-  TextEditingController emailController = new TextEditingController();
-  TextEditingController passwordController = new TextEditingController();
-  TextEditingController confirmPasswordController = new TextEditingController();
 
   TextEditingController pin1Controller = new TextEditingController();
   TextEditingController pin2Controller = new TextEditingController();
@@ -28,20 +33,86 @@ class DriverEditController {
 
   AuthProvider _authProvider;
   DriverProvider _driverProvider;
+  StorageProvider _storageProvider;
   ProgressDialog _progressDialog;
 
-  Future init (BuildContext context) {
+  PickedFile pickedFile;
+  File imageFile;
+
+  Driver driver;
+
+  Function refresh;
+
+  Future init (BuildContext context, Function refresh) {
     this.context = context;
+    this.refresh = refresh;
     _authProvider = new AuthProvider();
     _driverProvider = new DriverProvider();
+    _storageProvider = new StorageProvider();
     _progressDialog = MyProgressDialog.createProgressDialog(context, 'Espere un momento...');
+    getUserInfo();
   }
 
-  void register() async {
+  void getUserInfo() async {
+    driver = await _driverProvider.getById(_authProvider.getUser().uid);
+    usernameController.text = driver.username;
+
+    pin1Controller.text = driver.plate[0];
+    pin2Controller.text = driver.plate[1];
+    pin3Controller.text = driver.plate[2];
+    pin4Controller.text = driver.plate[3];
+    pin5Controller.text = driver.plate[5];
+    pin6Controller.text = driver.plate[6];
+
+    refresh();
+  }
+
+  void showAlertDialog() {
+
+    Widget galleryButton = FlatButton(
+      onPressed: (){
+        getImageFromGallery(ImageSource.gallery);
+      },
+      child: Text('GALERIA'),
+    );
+
+    Widget cameraButton = FlatButton(
+      onPressed: (){
+        getImageFromGallery(ImageSource.camera);
+      },
+      child: Text('CAMARA'),
+    );
+
+    AlertDialog alertDialog = AlertDialog(
+      title: Text('Selecciona tu imagen'),
+      actions: [
+        galleryButton,
+        cameraButton
+      ],
+    );
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alertDialog;
+        }
+    );
+  }
+
+  Future getImageFromGallery(ImageSource imageSource) async {
+    pickedFile = await ImagePicker().getImage(source: imageSource);
+    if(pickedFile != null) {
+      imageFile = File(pickedFile.path);
+    } else {
+      print('No se selecciono ninguna imagen');
+    }
+
+    Navigator.pop(context);
+    refresh();
+  }
+
+  void update() async {
     String username = usernameController.text;
-    String email = emailController.text.trim();
-    String confirmPassword = confirmPasswordController.text.trim();
-    String password = passwordController.text.trim();
 
     String pin1 = pin1Controller.text.trim();
     String pin2 = pin2Controller.text.trim();
@@ -52,60 +123,40 @@ class DriverEditController {
 
     String plate = '$pin1$pin2$pin3-$pin4$pin5$pin6';
 
-    print('Email: $email');
-    print('Password: $password');
-
-    if (username.isEmpty && email.isEmpty && password.isEmpty && confirmPassword.isEmpty) {
+    if(username.isEmpty){
       print('debes ingresar todos los campos');
-      utils.Snackbar.showSnackbar(context, key, 'Debes ingresar todos los campos');
-      return;
-    }
-
-    if (confirmPassword != password) {
-      print('Las contraseñas no coinciden');
-      utils.Snackbar.showSnackbar(context, key, 'Las contraseñas no coinciden');
-      return;
-    }
-
-    if (password.length < 6) {
-      print('el password debe tener al menos 6 caracteres');
-      utils.Snackbar.showSnackbar(context, key, 'el password debe tener al menos 6 caracteres');
+      utils.Snackbar.showSnackbar(context, key, 'debes ingresar todos los campos');
       return;
     }
 
     _progressDialog.show();
 
-    try {
+    if(pickedFile == null) {
+      Map<String, dynamic> data = {
+        'image' : driver?.image?? null,
+        'username' : username,
+        'plate' : plate,
+      };
 
-      bool isRegister = await _authProvider.register(email, password);
-
-      if (isRegister) {
-
-        Driver driver = new Driver(
-            id: _authProvider.getUser().uid,
-            email: _authProvider.getUser().email,
-            username: username,
-            password: password,
-            plate: plate
-        );
-
-        await _driverProvider.create(driver);
-
-        _progressDialog.hide();
-        Navigator.pushNamedAndRemoveUntil(context, 'driver/map', (route) => false);
-        utils.Snackbar.showSnackbar(context, key, 'El usuario se registro correctamente');
-        print('El usuario se registro correctamente');
-      }
-      else {
-        _progressDialog.hide();
-        print('El usuario no se pudo registrar');
-      }
-
-    } catch(error) {
+      await _driverProvider.update(data, _authProvider.getUser().uid);
       _progressDialog.hide();
-      utils.Snackbar.showSnackbar(context, key, 'Error: $error');
-      print('Error: $error');
+
+    } else {
+      TaskSnapshot snapshot = await _storageProvider.uploadFile(pickedFile);
+      String imageUrl = await snapshot.ref.getDownloadURL();
+
+      Map<String, dynamic> data = {
+        'image' : imageUrl,
+        'username' : username,
+        'plate' : plate,
+      };
+
+      await _driverProvider.update(data, _authProvider.getUser().uid);
     }
+
+    _progressDialog.hide();
+
+    utils.Snackbar.showSnackbar(context, key, 'Los datos se actualizarón');
 
   }
 

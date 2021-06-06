@@ -103,7 +103,9 @@ class _ClientMapPageState extends State<ClientMapPage> {
                   ),
                   SizedBox(height: 10),
                   CircleAvatar(
-                    backgroundImage: AssetImage('assets/img/profile.jpg'),
+                    backgroundImage: _controller.client?.image != null
+                        ? NetworkImage(_controller.client?.image)
+                        : AssetImage('assets/img/profile.jpg'),
                     radius: 40,
                   )
                 ]

@@ -32,7 +32,9 @@ class _BottomSheetDriverInfoState extends State<BottomSheetDriverInfo> {
           ),
           SizedBox(height: 15),
           CircleAvatar(
-            backgroundImage: AssetImage('assets/img/profile.jpg'),
+            backgroundImage: widget.imageUrl != null
+                ? NetworkImage(widget.imageUrl)
+                : AssetImage('assets/img/profile.jpg'),
             radius: 50,
           ),
           ListTile(
