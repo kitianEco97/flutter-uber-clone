@@ -121,6 +121,12 @@ class _ClientMapPageState extends State<ClientMapPage> {
             onTap: _controller.goToEditPage,
           ),
           ListTile(
+            title: Text('Historial de viajes'),
+            trailing: Icon(Icons.timer),
+            //leading: Icon(Icons.cancel),
+            onTap: _controller.goToHistoryPage,
+          ),
+          ListTile(
             title: Text('Cerrar sesión'),
             trailing: Icon(Icons.power_settings_new),
             //leading: Icon(Icons.cancel),

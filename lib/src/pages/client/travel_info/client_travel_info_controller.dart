@@ -15,13 +15,13 @@ import 'package:clone_uber_app/src/providers/prices_provider.dart';
 
 class ClientTravelInfoController {
 
-  BuildContext context;
-
   GoogleProvider _googleProvider;
   PricesProvider _pricesProvider;
 
   Function refresh;
+  BuildContext context;
   GlobalKey<ScaffoldState> key = new GlobalKey<ScaffoldState>();
+
   Completer<GoogleMapController> _mapController = Completer();
 
   CameraPosition initialPosition = CameraPosition(

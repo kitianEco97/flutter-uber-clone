@@ -15,6 +15,7 @@ class TravelHistory {
     this.idDriver,
     this.from,
     this.to,
+    this.nameDriver,
     this.timestamp,
     this.price,
     this.calificationClient,
@@ -26,6 +27,7 @@ class TravelHistory {
   String idDriver;
   String from;
   String to;
+  String nameDriver;
   int timestamp;
   double price;
   double calificationClient;
@@ -37,6 +39,7 @@ class TravelHistory {
     idDriver: json["idDriver"],
     from: json["from"],
     to: json["to"],
+    nameDriver: json["nameDriver"],
     timestamp: json["timestamp"],
     price: json["price"]?.toDouble() ?? 0,
     calificationClient: json["calificationClient"]?.toDouble() ?? 0,
@@ -49,6 +52,7 @@ class TravelHistory {
     "idDriver": idDriver,
     "from": from,
     "to": to,
+    "nameDriver": nameDriver,
     "timestamp": timestamp,
     "price": price,
     "calificationClient": calificationClient,

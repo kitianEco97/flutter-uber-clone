@@ -225,6 +225,10 @@ class ClientMapController {
     Navigator.pushNamed(context, 'client/edit');
   }
 
+  void goToHistoryPage() {
+    Navigator.pushNamed(context, 'client/history');
+  }
+
   void saveToken() {
     _pushNotificationsProvider.saveToken(_authProvider.getUser().uid, 'client');
   }

@@ -1,22 +1,24 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:clone_uber_app/src/pages/client/history_detail/client_history_detail_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 
-import 'package:clone_uber_app/src/pages/home/home_page.dart';
 import 'package:clone_uber_app/src/pages/login/login_page.dart';
+import 'package:clone_uber_app/src/pages/home/home_page.dart';
 
-import 'package:clone_uber_app/src/pages/client/register/client_register_page.dart';
-import 'package:clone_uber_app/src/pages/client/travel_info/client_travel_info_page.dart';
-import 'package:clone_uber_app/src/pages/client/map/client_map_page.dart';
-import 'package:clone_uber_app/src/pages/client/travel_map/client_travel_map_page.dart';
-import 'package:clone_uber_app/src/pages/client/edit/client_edit_page.dart';
 import 'package:clone_uber_app/src/pages/client/travel_calification/client_travel_calification_page.dart';
+import 'package:clone_uber_app/src/pages/client/travel_info/client_travel_info_page.dart';
+import 'package:clone_uber_app/src/pages/client/travel_map/client_travel_map_page.dart';
+import 'package:clone_uber_app/src/pages/client/register/client_register_page.dart';
+import 'package:clone_uber_app/src/pages/client/history/client_history_page.dart';
+import 'package:clone_uber_app/src/pages/client/edit/client_edit_page.dart';
+import 'package:clone_uber_app/src/pages/client/map/client_map_page.dart';
 
-import 'package:clone_uber_app/src/pages/driver/edit/driver_edit_page.dart';
 import 'package:clone_uber_app/src/pages/driver/driver_calification/driver_travel_calification_page.dart';
-import 'package:clone_uber_app/src/pages/driver/map/driver_map_page.dart';
-import 'package:clone_uber_app/src/pages/driver/register/driver_register_page.dart';
 import 'package:clone_uber_app/src/pages/driver/travel_map/driver_travel_map_page.dart';
+import 'package:clone_uber_app/src/pages/driver/register/driver_register_page.dart';
+import 'package:clone_uber_app/src/pages/driver/edit/driver_edit_page.dart';
+import 'package:clone_uber_app/src/pages/driver/map/driver_map_page.dart';
 
 import 'package:clone_uber_app/src/pages/client/travel_request/client_travel_request_page.dart';
 import 'package:clone_uber_app/src/pages/driver/travel_request/driver_travel_request_page.dart';
@@ -97,6 +99,8 @@ class _MyAppState extends State<MyApp> {
         'client/travel/map': (BuildContext context) => ClientTravelMapPage(),
         'client/travel/calification': (BuildContext context) => ClientTravelCalificationPage(),
         'client/edit': (BuildContext context) => ClientEditPage(),
+        'client/history': (BuildContext context) => ClientHistoryPage(),
+        'client/history/detail': (BuildContext context) => ClientHistoryDetailPage(),
 
       },
     );

@@ -1,6 +1,10 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:clone_uber_app/src/providers/driver_provider.dart';
+
 import 'package:clone_uber_app/src/models/travel_history.dart';
+import 'package:clone_uber_app/src/models/driver.dart';
 
 class TravelHistoryProvider {
 
@@ -26,6 +30,25 @@ class TravelHistoryProvider {
     if (errorMessage != null) {
       return Future.error(errorMessage);
     }
+  }
+  
+  Future<List<TravelHistory>> getByIdClient(String idClient) async {
+    QuerySnapshot querySnapshot = await _ref.where('idClient', isEqualTo: idClient).orderBy('timestamp', descending: false).get();
+    List<Map<String, dynamic>> allData = querySnapshot.docs.map((doc) => doc.data()).toList();
+
+    List<TravelHistory> travelHistoryList = new List();
+
+    for(Map<String, dynamic> data in allData) {
+      travelHistoryList.add(TravelHistory.fromJson(data));
+    }
+
+    for(TravelHistory travelHistory in travelHistoryList) {
+      DriverProvider driverProvider = new DriverProvider();
+      Driver driver = await driverProvider.getById(travelHistory.idDriver);
+      travelHistory.nameDriver = driver.username;
+    }
+
+    return travelHistoryList;
   }
 
   Stream<DocumentSnapshot> getByIdStream(String id) {
